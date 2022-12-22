@@ -1,21 +1,9 @@
-const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const express = require("express");
+const { probe } = require("tcp-ping-sync");
 
-// Get environment variables
-dotenv.config();
-
-// Build Mongo connection URL
-const mongoUsername = process.env.MONGO_USERNAME || "nodeapp";
-const mongoPassword = process.env.MONGO_PASSWORD || "passwd";
-const mongoHost = process.env.MONGO_HOST || "mongo";
-const mongoDbName = process.env.MONGO_DBNAME || "nodemongo";
-const mongoUrl = `mongodb://${mongoUsername}:${mongoPassword}@${mongoHost}:27017/${mongoDbName}`;
-
-console.log(">>", mongoUrl);
-
-// port for app
-const port = process.env.PORT || 5000;
+const { mongoHost, port } = require("./settings");
+const connectToMongo = require("./connect-to-mongo");
 
 // Initialize a mongo model
 const Cat = mongoose.model("Cat", { name: String });
@@ -55,7 +43,14 @@ app.post("/cats", async (req, res) => {
 main().catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect(mongoUrl);
+  console.log("\n\n>>>> APP STARTUP\n\n");
+  console.log("pinging", mongoHost);
+
+  const isGoogleReachable = probe(mongoHost, 27017);
+  console.log(isGoogleReachable);
+  await connectToMongo();
+
+  app.listen(port, () => console.log(`listening on ${port}`));
 
   // use `await mongoose.connect('mongodb://user:password@localhost:27017/test');` if your database has auth enabled
 }
