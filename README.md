@@ -9,6 +9,7 @@ Sources:
 * [docker MongoDB and CouchDB authentication](https://github.com/ns-mnawaz/mongo-couch-auth)
 * [docker-mongo-auth](https://github.com/aashreys/docker-mongo-auth)
 * [How to Enable Authentication on MongoDB (medium)](https://medium.com/mongoaudit/how-to-enable-authentication-on-mongodb-b9e8a924efac)
+* [How To Secure MongoDB on Ubuntu 20.04 (DigitalOcean)](https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04)
 
 ## Directement sur l'instance de l'hôte macOS
 
@@ -146,3 +147,103 @@ echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb
 sudo apt-get update
 sudo apt-get install -y mongodb-org
 ```
+
+### Récupération app
+
+Cloné le repo de l'app, elle marche sans l'auth.
+
+### 1. Ajout admin mongo
+
+Suivre le [tuto de DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-secure-mongodb-on-ubuntu-20-04#step-1-adding-an-administrative-user)
+
+Run `mongo`, puis `use admin`, puis adapte l'original du tuto de ceci :
+
+```
+db.createUser(
+  {
+    user: "AdminSammy",
+    pwd: passwordPrompt(),
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
+  }
+)
+```
+
+&hellip; à ceci (mix entre tuto medium et celui-ci) :
+
+```
+db.createUser(
+  {
+    user: "superadmin",
+    pwd: "AdminP4ss",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
+  }
+)
+```
+
+Puis quitte.
+
+### 2. Activation auth
+
+```
+sudo nano /etc/mongod.conf
+```
+
+et ajoute :
+
+```
+security:
+  authorization: enabled
+```
+
+puis :
+
+```
+sudo systemctl restart mongod
+```
+
+Test l'accès :
+
+```
+mongo -u superadmin -p --authenticationDatabase admin
+```
+
+Entre le pwd `AdminP4ss`. Ça marche.
+
+### Dans l'app node...
+
+Ça marche avec le **compte admin**.
+
+Le `.env` qui va avec :
+
+```
+MONGO_HOST=localhost
+MONGO_USERNAME=superadmin
+MONGO_PASSWORD=AdminP4ss
+MONGO_DBNAME=admin
+```
+
+Création d'un compte standard
+
+```
+db.createUser(
+  {
+    user: "nodeapp",
+    pwd: "passwd",
+    roles: [
+      { role: "readWrite", db: "nodemongo" }
+    ]
+  }
+)
+```
+
+Le `.env` qui va avec :
+
+```
+MONGO_HOST=localhost
+MONGO_USERNAME=nodeapp
+MONGO_PASSWORD=passwd
+MONGO_DBNAME=nodemongo
+```
+
+Et ça marche !
+

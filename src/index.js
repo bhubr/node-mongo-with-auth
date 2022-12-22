@@ -12,7 +12,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 
 app.get("/", async (req, res) => {
-  const cats = await Cats.find();
+  const cats = await Cat.find();
   res.send(`<!DOCTYPE html>
   <html lang="en">
   <head>
