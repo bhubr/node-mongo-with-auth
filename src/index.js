@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const { probe } = require("tcp-ping-sync");
+// const { probe } = require("tcp-ping-sync");
 
 const { mongoHost, port } = require("./settings");
 const connectToMongo = require("./connect-to-mongo");
@@ -44,10 +44,12 @@ main().catch((err) => console.log(err));
 
 async function main() {
   console.log("\n\n>>>> APP STARTUP\n\n");
-  console.log("pinging", mongoHost);
 
-  const isGoogleReachable = probe(mongoHost, 27017);
-  console.log(isGoogleReachable);
+  // had problems with reaching the mongo container from the app container
+  // console.log("pinging", mongoHost);
+  // const isGoogleReachable = probe(mongoHost, 27017);
+  // console.log(isGoogleReachable);
+
   await connectToMongo();
 
   app.listen(port, () => console.log(`listening on ${port}`));
