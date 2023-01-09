@@ -306,3 +306,5 @@ Résultat :
   ]
 }
 ```
+
+> :warning: branche `try-custom-mongo-docker-build` faite pour un build customisé de l'image officielle Docker (repo cloné depuis GitHub).

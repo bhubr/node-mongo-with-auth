@@ -3,18 +3,18 @@ version: "3.7"
 
 services:
   mongo:
-    image: mongo:4.4
+    image: benoithubert.me/my-mongo:4.4
     container_name: mongo
     # restart: always
     environment:
-      # MONGO_INITDB_DATABASE: nodemongo
-      # MONGO_INITDB_ROOT_USERNAME: root
-      # MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: nodemongo
       MONGO_INITDB_ROOT_USERNAME: nodeapp
       MONGO_INITDB_ROOT_PASSWORD: passwd
+      # MONGO_INITDB_ROOT_USERNAME: nodeapp
+      # MONGO_INITDB_ROOT_PASSWORD: passwd
       MONGO_APPLICATION_USERNAME: nodeapp
       MONGO_APPLICATION_PASSWORD: passwd
-      MONGO_APPLICATION_DATABASE: nodemongo
+      # MONGO_APPLICATION_DATABASE: nodemongo
     volumes:
       - ./mongo-data:/data/db
       # - ./scripts/create-mongo-admin-user.sh:/docker-entrypoint-initdb.d/create-mongo-admin-user.sh:ro
