@@ -247,3 +247,62 @@ MONGO_DBNAME=nodemongo
 
 Et ça marche !
 
+## 3. essayons de comprendre
+
+Comment se crée le compte utilisateur dans l'image Docker ?
+
+On clone localement le [repo de l'image officielle mongo](https://github.com/docker-library/mongo).
+
+Ajout de cette ligne au fichier `4.4/docker-entrypoint.sh`, ligne 372.
+
+```
+			echo ">>> CREATING USER: ${mongo[@]} $rootAuthDatabase"
+```
+
+En fait `${mongo[@]} $rootAuthDatabase` se traduit, une fois exécuté, en `mongo --host 127.0.0.1 --port 27017 --quiet admin`.
+
+Donc ça exécute la création de l'user sur la db `admin`.
+
+Une fois le conteneur lancé avec :
+
+```
+  MONGO_INITDB_DATABASE: nodemongo
+  MONGO_INITDB_ROOT_USERNAME: nodeapp
+  MONGO_INITDB_ROOT_PASSWORD: passwd
+```
+
+* On se connecte avec `docker exec -it mongo bash`,
+* puis `mongo --host 127.0.0.1 --port 27017 --quiet admin`,
+* puis `db.auth("nodeapp", "passwd")`,
+* puis on peut [lister les utilisateurs](https://www.mongodb.com/docs/manual/tutorial/list-users/) : `db.system.users.find()`.
+
+Résultat :
+
+```json
+{
+  "_id": "admin.nodeapp",
+  "userId": UUID("59c1743a-2704-46ea-8789-14967267f924"),
+  "user": "nodeapp",
+  "db": "admin",
+  "credentials": {
+    "SCRAM-SHA-1": {
+      "iterationCount": 10000,
+      "salt": "5GKmqdLk7U8g/hkR0XEGmg==",
+      "storedKey": "LScjo2icydGuaBzWE/vdg8rjTsM=",
+      "serverKey": "jTvWUXAAef35Psq/WXJNy/VtSMY="
+    },
+    "SCRAM-SHA-256": {
+      "iterationCount": 15000,
+      "salt": "C1zDT6l5j0n/yUTqBzoGelpABR+KkEAdOIykaQ==",
+      "storedKey": "AXC7NyYhGKgCxzYKpMpBKa0ssH8uuahchnhMjAj5jiU=",
+      "serverKey": "NfYKZvHRaNuRtm5UDl21EHFk8QLbBoQfGJ5wYAbdLcQ="
+    }
+  },
+  "roles": [
+    {
+      "role": "root",
+      "db": "admin"
+    }
+  ]
+}
+```
